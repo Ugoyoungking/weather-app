@@ -3,73 +3,119 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Advanced Weather App with Themes</title>
+<title>WeatherFlow Dashboard</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-  <script src="script.js" defer></script>
+<script src="script.js" defer></script>
 <style>
-:root{--bg-color-light:#f0f8ff;--text-color-light:#000;--bg-color-dark:#222;--text-color-dark:#fff;--card-light:#fff;--card-dark:#333}
-body{font-family:Arial,sans-serif;margin:0;padding:10px;background:var(--bg-color-light);color:var(--text-color-light);transition:.3s}
-body.dark-theme{background:var(--bg-color-dark);color:var(--text-color-dark)}
-#themeToggleBtn{position:fixed;top:10px;right:10px;padding:8px 12px;border:0;border-radius:4px;cursor:pointer;font-weight:bold;z-index:999;background:#555;color:#fff}
-#controls{display:flex;justify-content:center;margin-bottom:10px}#search-section{flex:1 1 300px;display:flex;flex-direction:column;gap:5px;position:relative;max-width:800px}
-#cityInput{padding:8px;font-size:1em}#autocompleteResults{border:1px solid #ccc;max-height:150px;overflow-y:auto;background:#fff;position:absolute;top:50px;width:100%;z-index:1000}
-body.dark-theme #autocompleteResults{background:#333;border-color:#555;color:#fff}.result-row{padding:6px;cursor:pointer}.result-row:hover{background:rgba(0,0,0,.08)}
-button{padding:8px;border:0;border-radius:4px;cursor:pointer;font-weight:bold}#getWeatherBtn{background:#4CAF50;color:#fff}#locateBtn{background:#2196F3;color:#fff}#forecastBtn{background:#ff9800;color:#fff}#mapSelectBtn{background:#9c27b0;color:#fff}
-#unitToggle,#recentActions{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:5px}#recentSearches{display:flex;gap:6px;flex-wrap:wrap}
-.chip{background:#e3f2fd;color:#0d47a1;border-radius:999px;padding:4px 10px;font-size:.85rem;cursor:pointer}body.dark-theme .chip{background:#1e3a5f;color:#d7e9ff}
-#weatherDisplay{max-width:900px;margin:20px auto;padding:10px;background:var(--card-light);border-radius:8px;box-shadow:0 0 10px rgba(0,0,0,.1)}body.dark-theme #weatherDisplay{background:var(--card-dark);color:#fff}
-#currentWeather,#forecastContainer,#airQualityContainer{margin-bottom:20px}#mapContainer{display:none;margin-bottom:20px}#map{height:300px}.muted{opacity:.75;font-size:.9rem}
-@media(max-width:700px){#controls{flex-direction:column}}
+:root{
+  --bg:linear-gradient(135deg,#e9f3ff 0%,#f6f9ff 45%,#edf7f5 100%);
+  --surface:#ffffff;
+  --surface-2:#f6f8ff;
+  --text:#0d1b2a;
+  --muted:#56657a;
+  --primary:#2563eb;
+  --primary-soft:#dbeafe;
+  --success:#0f766e;
+  --border:#d9e2f2;
+  --shadow:0 18px 45px rgba(15, 23, 42, 0.12);
+}
+body.dark-theme{
+  --bg:linear-gradient(135deg,#090e1a 0%,#10182a 45%,#07141b 100%);
+  --surface:#101a2e;
+  --surface-2:#16233f;
+  --text:#eaf2ff;
+  --muted:#b8c5dd;
+  --primary:#60a5fa;
+  --primary-soft:#1d365e;
+  --success:#2dd4bf;
+  --border:#2a3a5e;
+  --shadow:0 18px 45px rgba(1, 4, 12, 0.45);
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:Inter,system-ui,Segoe UI,Arial,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;transition:.3s}
+.container{max-width:1100px;margin:0 auto;padding:18px}
+.hero{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+.hero h1{margin:0;font-size:clamp(1.5rem,4vw,2.2rem)}
+.subtitle{margin:.35rem 0 0;color:var(--muted)}
+#themeToggleBtn{border:1px solid var(--border);background:var(--surface);color:var(--text);padding:9px 13px;border-radius:12px;font-weight:700;cursor:pointer}
+.panel{background:var(--surface);border:1px solid var(--border);box-shadow:var(--shadow);border-radius:18px;padding:16px;margin-top:16px}
+.controls-grid{display:grid;grid-template-columns:2fr 1fr;gap:12px}
+.input-wrap{position:relative}
+#cityInput{width:100%;padding:12px;border:1px solid var(--border);border-radius:12px;background:var(--surface-2);color:var(--text)}
+#autocompleteResults{position:absolute;top:48px;left:0;right:0;background:var(--surface);border:1px solid var(--border);border-radius:12px;max-height:180px;overflow:auto;z-index:2}
+.result-row{padding:9px 11px;cursor:pointer}.result-row:hover{background:var(--primary-soft)}
+.button-row{display:flex;gap:8px;flex-wrap:wrap}
+button{padding:10px 12px;border-radius:10px;border:0;cursor:pointer;font-weight:700}
+#getWeatherBtn{background:var(--primary);color:white}#locateBtn{background:#0ea5e9;color:#fff}#forecastBtn{background:#f59e0b;color:#111827}#mapSelectBtn{background:#8b5cf6;color:#fff}
+#unitToggle{display:flex;gap:10px;align-items:center;margin-top:12px;color:var(--muted)}
+#recentSearches{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.chip{background:var(--primary-soft);color:var(--primary);padding:5px 10px;border-radius:999px;font-size:.85rem;cursor:pointer}
+#weatherDisplay{display:grid;grid-template-columns:1.2fr 1fr;gap:12px}
+.card{background:var(--surface-2);border:1px solid var(--border);border-radius:14px;padding:14px}
+#forecastContainer .day{border:1px solid var(--border);border-radius:12px;padding:10px;margin-top:8px}
+#map{height:320px;border-radius:12px}
+#loading{display:none;font-weight:700;color:var(--primary)}
+.muted{color:var(--muted)}
+@media (max-width:900px){.controls-grid,#weatherDisplay{grid-template-columns:1fr}}
+
+body::before,body::after{content:"";position:fixed;inset:0;pointer-events:none;opacity:0;transition:opacity .9s ease;z-index:0}
+body::before{background:radial-gradient(circle at 20% 15%,rgba(255,255,255,.28),transparent 30%),radial-gradient(circle at 80% 20%,rgba(255,255,255,.22),transparent 35%)}
+body.weather-sunny{--bg:linear-gradient(160deg,#60a5fa 0%,#93c5fd 35%,#fef9c3 100%)}
+body.weather-rain{--bg:linear-gradient(170deg,#0f172a 0%,#1e293b 45%,#334155 100%)}
+body.weather-night{--bg:linear-gradient(170deg,#020617 0%,#0b1733 45%,#132a56 100%)}
+body.weather-night::before{opacity:1}
+.weather-overlay{position:fixed;inset:0;pointer-events:none;opacity:0;transition:opacity .9s ease;z-index:0}
+#rainOverlay{background-image:linear-gradient(transparent,rgba(255,255,255,.16));background-size:100% 100%;}
+#rainOverlay::before{content:"";position:absolute;inset:-20% 0;background-image:repeating-linear-gradient(110deg,rgba(255,255,255,.35) 0 2px,transparent 2px 20px);animation:rainfall .55s linear infinite;opacity:.45}
+#starsOverlay{background:radial-gradient(circle at 15% 30%,rgba(255,255,255,.9) 1px,transparent 2px),radial-gradient(circle at 35% 65%,rgba(255,255,255,.8) 1px,transparent 2px),radial-gradient(circle at 70% 20%,rgba(255,255,255,.85) 1px,transparent 2px),radial-gradient(circle at 85% 50%,rgba(255,255,255,.75) 1px,transparent 2px);background-size:220px 220px;animation:twinkle 4s ease-in-out infinite}
+body.weather-rain #rainOverlay{opacity:1}
+body.weather-night #starsOverlay{opacity:1}
+.container{position:relative;z-index:1}
+@keyframes rainfall{from{transform:translateY(-8%)}to{transform:translateY(8%)}}
+@keyframes twinkle{0%,100%{filter:brightness(1)}50%{filter:brightness(1.35)}}
 </style>
 </head>
 <body>
-<button id="themeToggleBtn">Switch to Dark Mode</button>
-<h1 style="text-align:center">Advanced Weather App with Themes</h1>
-<div id="controls"><div id="search-section">
-  <input type="text" id="cityInput" placeholder="Search city..." autocomplete="off"/>
-  <div id="autocompleteResults"></div>
-  <div style="margin-top:5px;"><button id="getWeatherBtn">Get Weather</button><button id="locateBtn">Use My Location</button><button id="forecastBtn">Show 5-Day Forecast</button><button id="mapSelectBtn">Select on Map</button></div>
-  <div id="unitToggle"><label><input type="radio" name="unit" value="metric" checked/> °C</label><label><input type="radio" name="unit" value="imperial"/> °F</label></div>
-  <div id="recentActions"><div id="recentSearches"></div><button id="clearRecentBtn">Clear Recent</button></div>
-</div></div>
-<div id="mapContainer"><div id="map"></div><button id="confirmMapSelection" style="margin-top:10px;">Confirm Location</button></div>
-<div id="aboutProject" style="max-width:900px;margin:10px auto 0;padding:10px;border-radius:8px;background:rgba(0,0,0,.04)"><h3 style="margin-top:0;">About this project</h3><p>This weather dashboard provides current weather, AQI insights, and 5-day forecasts using city search, your location, or map selection.</p><p class="muted">Developer: <a href="https://ugoyoungking.github.io/portfolio/" target="_blank" rel="noopener noreferrer">Ugoyoungking Portfolio</a></p></div>
-<div id="weatherDisplay"><div id="loading" style="text-align:center; display:none;">Loading...</div><div id="currentWeather"></div><div id="airQualityContainer"></div><div id="forecastContainer"></div></div>
+<div id="rainOverlay" class="weather-overlay" aria-hidden="true"></div>
+<div id="starsOverlay" class="weather-overlay" aria-hidden="true"></div>
+<div class="container">
+  <header class="hero">
+    <div>
+      <h1>WeatherFlow Dashboard</h1>
+      <p class="subtitle">Fast weather insights with forecast, AQI, location search, and map selection.</p>
+    </div>
+    <button id="themeToggleBtn">Switch Theme</button>
+  </header>
+
+  <section class="panel">
+    <div class="controls-grid">
+      <div>
+        <div class="input-wrap">
+          <input type="text" id="cityInput" placeholder="Search city..." autocomplete="off"/>
+          <div id="autocompleteResults"></div>
+        </div>
+        <div class="button-row" style="margin-top:10px">
+          <button id="getWeatherBtn">Get Weather</button><button id="locateBtn">Use My Location</button><button id="forecastBtn">5-Day Forecast</button><button id="mapSelectBtn">Pick on Map</button>
+        </div>
+      </div>
+      <div>
+        <div id="unitToggle"><label><input type="radio" name="unit" value="metric" checked/> Celsius (°C)</label><label><input type="radio" name="unit" value="imperial"/> Fahrenheit (°F)</label></div>
+        <div style="margin-top:12px" id="recentActions"><div id="recentSearches"></div><button id="clearRecentBtn" style="margin-top:10px;background:#ef4444;color:#fff">Clear Recent</button></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="mapContainer" class="panel" style="display:none">
+    <h3 style="margin-top:0">Select a location</h3>
+    <div id="map"></div>
+    <button id="confirmMapSelection" style="margin-top:10px;background:var(--success);color:#fff">Confirm Location</button>
+  </section>
+
+  <section id="weatherDisplay" class="panel">
+    <div class="card"><div id="loading">Loading weather data…</div><div id="currentWeather"></div></div>
+    <div class="card"><div id="airQualityContainer"></div><div id="forecastContainer"></div></div>
+  </section>
+</div>
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-<script>
-const apiKey='f822fe46aea7d7f62842fb124e64db9b';
-let currentUnit='metric',lastCity='',lastCoords=null,map,selectedLatLng=null,lastUpdated='',recentCities=JSON.parse(localStorage.getItem('recentCities')||'[]');
-const cityInput=document.getElementById('cityInput'),autocompleteResults=document.getElementById('autocompleteResults'),forecastContainer=document.getElementById('forecastContainer'),currentWeatherDiv=document.getElementById('currentWeather'),airQualityContainer=document.getElementById('airQualityContainer'),loadingDiv=document.getElementById('loading'),themeToggleBtn=document.getElementById('themeToggleBtn'),recentSearchesDiv=document.getElementById('recentSearches');
-
-const aqiLabels={1:'Good',2:'Fair',3:'Moderate',4:'Poor',5:'Very Poor'};
-const formatTime=(unix,tz)=>new Date((unix+tz)*1000).toUTCString().slice(17,22);
-function renderRecentSearches(){recentSearchesDiv.innerHTML=recentCities.length?'<strong>Recent:</strong> ':'';recentCities.forEach(city=>{const chip=document.createElement('span');chip.className='chip';chip.textContent=city;chip.onclick=()=>{cityInput.value=city;fetchWeather(city)};recentSearchesDiv.appendChild(chip);});}
-function saveRecentCity(city){if(!city)return;recentCities=[city,...recentCities.filter(c=>c.toLowerCase()!==city.toLowerCase())].slice(0,6);localStorage.setItem('recentCities',JSON.stringify(recentCities));renderRecentSearches();}
-function detectDeviceTheme(){const stored=localStorage.getItem('themeMode'),prefersDark=window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches,useDark=stored?stored==='dark':prefersDark;document.body.classList.toggle('dark-theme',useDark);themeToggleBtn.textContent=useDark?'Switch to Light Mode':'Switch to Dark Mode';}
-function showLoading(){loadingDiv.style.display='block'} function hideLoading(){loadingDiv.style.display='none'} function clearForecast(){forecastContainer.innerHTML=''}
-
-async function fetchAirQuality(lat,lon){
-  try{const res=await fetch(`https://api.openweathermap.org/data/2.5/air_pollution?lat=${lat}&lon=${lon}&appid=${apiKey}`); if(!res.ok) throw new Error('AQI unavailable');
-    const data=await res.json(); const aqi=data.list[0].main.aqi;
-    airQualityContainer.innerHTML=`<h3>Air Quality</h3><p>AQI: <strong>${aqi}</strong> (${aqiLabels[aqi]||'Unknown'})</p>`;
-  } catch { airQualityContainer.innerHTML='<p class="muted">Air quality data unavailable.</p>'; }
-}
-
-function displayCurrentWeather(data){
-  const {name,main,weather,wind,sys,timezone}=data; const iconUrl=`https://openweathermap.org/img/wn/${weather[0].icon}@2x.png`; lastUpdated=new Date().toLocaleString();
-  currentWeatherDiv.innerHTML=`<h2>Weather in ${name}</h2><img src="${iconUrl}" alt="${weather[0].description}"/><p style="font-size:1.2em;">Temperature: ${Math.round(main.temp)} °${currentUnit==='metric'?'C':'F'} (Feels like ${Math.round(main.feels_like)}°)</p><p>Condition: ${weather[0].description.charAt(0).toUpperCase()+weather[0].description.slice(1)}</p><p>Humidity: ${main.humidity}% • Pressure: ${main.pressure} hPa • Wind: ${Math.round(wind.speed)} ${currentUnit==='metric'?'m/s':'mph'}</p><p>Sunrise: ${formatTime(sys.sunrise,timezone)} • Sunset: ${formatTime(sys.sunset,timezone)}</p><p class="muted">Last updated: ${lastUpdated}</p>`;
-}
-
-async function fetchWeather(city){lastCity=city;showLoading();clearForecast();airQualityContainer.innerHTML='';try{const res=await fetch(`https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(city)}&units=${currentUnit}&appid=${apiKey}`);if(!res.ok)throw new Error('City not found');const data=await res.json();lastCoords={lat:data.coord.lat,lon:data.coord.lon};displayCurrentWeather(data);saveRecentCity(data.name);await fetchAirQuality(lastCoords.lat,lastCoords.lon);}catch(err){currentWeatherDiv.innerHTML=`<p style="color:red;">${err.message}</p>`;}finally{hideLoading();}}
-async function fetchWeatherByCoords(lat,lon){showLoading();clearForecast();airQualityContainer.innerHTML='';try{const res=await fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&units=${currentUnit}&appid=${apiKey}`);if(!res.ok)throw new Error('Unable to fetch weather data');const data=await res.json();displayCurrentWeather(data);lastCity=data.name;lastCoords={lat,lon};saveRecentCity(data.name);await fetchAirQuality(lat,lon);}catch(err){currentWeatherDiv.innerHTML=`<p style="color:red;">${err.message}</p>`;}finally{hideLoading();}}
-async function fetchForecast(){if(!lastCity&&!lastCoords)return alert('Please search or select a city first.');showLoading();const endpoint=lastCoords?`https://api.openweathermap.org/data/2.5/forecast?lat=${lastCoords.lat}&lon=${lastCoords.lon}&units=${currentUnit}&appid=${apiKey}`:`https://api.openweathermap.org/data/2.5/forecast?q=${encodeURIComponent(lastCity)}&units=${currentUnit}&appid=${apiKey}`;try{const res=await fetch(endpoint);if(!res.ok)throw new Error('Forecast data not available');const data=await res.json();forecastContainer.innerHTML='<h3>5-Day Forecast</h3>';const byDay={};data.list.forEach(e=>{const d=e.dt_txt.split(' ')[0];(byDay[d] ||= []).push(e)});Object.keys(byDay).slice(0,5).forEach(date=>{const entries=byDay[date],avg=Math.round(entries.reduce((s,e)=>s+e.main.temp,0)/entries.length),min=Math.round(Math.min(...entries.map(e=>e.main.temp_min))),max=Math.round(Math.max(...entries.map(e=>e.main.temp_max)));forecastContainer.innerHTML+=`<div style="border:1px solid #ccc;padding:8px;border-radius:8px;margin-bottom:8px;"><h4>${date}</h4><p>${entries[0].weather[0].description}</p><p>Avg: ${avg}° • Low/High: ${min}°/${max}°</p></div>`;});}catch(err){forecastContainer.innerHTML=`<p style="color:red;">${err.message}</p>`;}finally{hideLoading();}}
-
-let debounceTimeout=null;cityInput.addEventListener('input',()=>{const query=cityInput.value.trim();clearTimeout(debounceTimeout);if(query.length<3)return autocompleteResults.innerHTML='';debounceTimeout=setTimeout(async()=>{const res=await fetch(`https://api.openweathermap.org/geo/1.0/direct?q=${encodeURIComponent(query)}&limit=5&appid=${apiKey}`),data=await res.json();autocompleteResults.innerHTML='';data.forEach(loc=>{const div=document.createElement('div');div.className='result-row';div.textContent=`${loc.name}${loc.state?', '+loc.state:''}, ${loc.country}`;div.onclick=()=>{cityInput.value=loc.name;autocompleteResults.innerHTML='';fetchWeather(loc.name)};autocompleteResults.appendChild(div);});},250);});
-cityInput.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();const city=cityInput.value.trim();if(city)fetchWeather(city);}});
-document.querySelectorAll('input[name="unit"]').forEach(r=>r.addEventListener('change',()=>{currentUnit=document.querySelector('input[name="unit"]:checked').value;if(lastCoords)fetchWeatherByCoords(lastCoords.lat,lastCoords.lon);else if(lastCity)fetchWeather(lastCity);}));
-document.getElementById('clearRecentBtn').addEventListener('click',()=>{recentCities=[];localStorage.removeItem('recentCities');renderRecentSearches();});
-document.getElementById('getWeatherBtn').onclick=()=>{const city=cityInput.value.trim();if(city)fetchWeather(city)};document.getElementById('locateBtn').onclick=()=>navigator.geolocation?navigator.geolocation.getCurrentPosition(p=>{selectedLatLng={lat:p.coords.latitude,lng:p.coords.longitude};fetchWeatherByCoords(selectedLatLng.lat,selectedLatLng.lng);},()=>alert('Unable to retrieve your location.')):alert('Geolocation not supported.');document.getElementById('forecastBtn').onclick=fetchForecast;
-document.getElementById('mapSelectBtn').onclick=()=>{document.getElementById('mapContainer').style.display='block';initMap()};document.getElementById('confirmMapSelection').onclick=()=>{if(!selectedLatLng)return alert('Please select a location on the map.');fetchWeatherByCoords(selectedLatLng.lat,selectedLatLng.lng);document.getElementById('mapContainer').style.display='none';}
-function initMap(){if(!map){map=L.map('map').setView([20,0],2);L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OpenStreetMap contributors'}).addTo(map);map.on('click',e=>{selectedLatLng=e.latlng;if(map.marker)map.removeLayer(map.marker);map.marker=L.marker(e.latlng).addTo(map);});}setTimeout(()=>map.invalidateSize(),50)}
-detectDeviceTheme();renderRecentSearches();themeToggleBtn.onclick=()=>{const dark=!document.body.classList.contains('dark-theme');document.body.classList.toggle('dark-theme',dark);themeToggleBtn.textContent=dark?'Switch to Light Mode':'Switch to Dark Mode';localStorage.setItem('themeMode',dark?'dark':'light')};
-</script></body></html>
+</body>
+</html>
