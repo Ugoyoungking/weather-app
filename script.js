@@ -21,6 +21,26 @@ const humidityGauge = document.getElementById('humidityGauge');
 const humidityValue = document.getElementById('humidityValue');
 let hourlyTempChart, weeklyTempChart, windChart;
 
+const mobileNavButtons = document.querySelectorAll('.mobile-nav button');
+
+function setupMobileNav() {
+  mobileNavButtons.forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const targetId = btn.getAttribute('data-target');
+      const target = document.getElementById(targetId);
+      if (!target) return;
+      target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      mobileNavButtons.forEach((b) => b.classList.remove('active'));
+      btn.classList.add('active');
+      if (targetId === 'mapContainer') {
+        document.getElementById('mapContainer').style.display = 'block';
+        initMap();
+      }
+    });
+  });
+}
+
+
 
 const aqiLabels = { 1: 'Good', 2: 'Fair', 3: 'Moderate', 4: 'Poor', 5: 'Very Poor' };
 const formatTime = (unix, tz) => new Date((unix + tz) * 1000).toUTCString().slice(17, 22);
@@ -350,6 +370,7 @@ function initMap() {
 
 detectDeviceTheme();
 renderRecentSearches();
+setupMobileNav();
 themeToggleBtn.onclick = () => {
   const dark = !document.body.classList.contains('dark-theme');
   document.body.classList.toggle('dark-theme', dark);
