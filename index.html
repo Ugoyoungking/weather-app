@@ -43,13 +43,19 @@ body{margin:0;font-family:Inter,system-ui,Segoe UI,Arial,sans-serif;background:v
 .input-wrap{position:relative}
 #cityInput{width:100%;padding:12px;border:1px solid var(--border);border-radius:12px;background:var(--surface-2);color:var(--text)}
 #autocompleteResults{position:absolute;top:48px;left:0;right:0;background:var(--surface);border:1px solid var(--border);border-radius:12px;max-height:180px;overflow:auto;z-index:2}
-.result-row{padding:9px 11px;cursor:pointer}.result-row:hover{background:var(--primary-soft)}
+.result-row{padding:9px 11px;cursor:pointer}.result-row:hover,.result-row.active{background:var(--primary-soft)}
 .button-row{display:flex;gap:8px;flex-wrap:wrap}
 button{padding:10px 12px;border-radius:10px;border:0;cursor:pointer;font-weight:700}
 #getWeatherBtn{background:var(--primary);color:white}#locateBtn{background:#0ea5e9;color:#fff}#forecastBtn{background:#f59e0b;color:#111827}#mapSelectBtn{background:#8b5cf6;color:#fff}
 #unitToggle{display:flex;gap:10px;align-items:center;margin-top:12px;color:var(--muted)}
 #recentSearches{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
-.chip{background:var(--primary-soft);color:var(--primary);padding:5px 10px;border-radius:999px;font-size:.85rem;cursor:pointer}
+.chip{background:var(--primary-soft);color:var(--primary);padding:6px 10px;border-radius:999px;font-size:.85rem;cursor:pointer}
+.mini-card{background:color-mix(in srgb,var(--surface-2) 74%, transparent);border:1px solid var(--border);border-radius:14px;padding:10px}
+.day-progress{height:8px;background:rgba(148,163,184,.25);border-radius:999px;overflow:hidden}.day-progress span{display:block;height:100%;background:linear-gradient(90deg,#f59e0b,#f97316)}
+.error-msg{color:#ef4444;font-weight:600}
+.skeleton{background:linear-gradient(90deg,rgba(148,163,184,.2),rgba(148,163,184,.35),rgba(148,163,184,.2));background-size:200% 100%;animation:shimmer 1.2s infinite;border-radius:8px;margin:8px 0}.skeleton-title{height:30px;width:50%}.skeleton-line{height:14px;width:90%}
+.toast{position:fixed;bottom:86px;left:50%;transform:translateX(-50%);background:#0f172a;color:#fff;padding:10px 14px;border-radius:10px;opacity:0;transition:.3s;z-index:50}.toast.show{opacity:1}
+@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
 #weatherDisplay{display:grid;grid-template-columns:1.2fr 1fr;gap:16px}
 .card{background:color-mix(in srgb,var(--surface-2) 72%, transparent);border:1px solid color-mix(in srgb,var(--border) 62%, white 38%);border-radius:16px;padding:16px;box-shadow:0 10px 26px rgba(15,23,42,.12);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
 #forecastContainer .day{border:1px solid var(--border);border-radius:12px;padding:10px;margin-top:8px}
@@ -112,12 +118,12 @@ body.weather-night #starsOverlay{opacity:1}
           <div id="autocompleteResults"></div>
         </div>
         <div class="button-row" style="margin-top:10px">
-          <button id="getWeatherBtn">Get Weather</button><button id="locateBtn">Use My Location</button><button id="forecastBtn">5-Day Forecast</button><button id="mapSelectBtn">Pick on Map</button>
+          <button id="getWeatherBtn">Get Weather</button><button id="locateBtn">Use My Location</button><button id="voiceBtn">🎙️ Voice Search</button><button id="forecastBtn">5-Day Forecast</button><button id="mapSelectBtn">Pick on Map</button>
         </div>
       </div>
       <div>
         <div id="unitToggle"><label><input type="radio" name="unit" value="metric" checked/> Celsius (°C)</label><label><input type="radio" name="unit" value="imperial"/> Fahrenheit (°F)</label></div>
-        <div style="margin-top:12px" id="recentActions"><div id="recentSearches"></div><button id="clearRecentBtn" style="margin-top:10px;background:#ef4444;color:#fff">Clear Recent</button></div>
+        <div style="margin-top:12px" id="recentActions"><div id="recentSearches"></div><div id="favoriteCities" style="margin-top:8px"></div><button id="clearRecentBtn" style="margin-top:10px;background:#ef4444;color:#fff">Clear Recent</button></div>
       </div>
     </div>
   </section>
@@ -133,6 +139,8 @@ body.weather-night #starsOverlay{opacity:1}
     <div class="card"><div id="airQualityContainer"></div><div id="forecastContainer"></div></div>
   </section>
 
+
+  <section id="multiPanel" class="panel"><h3 style="margin:0 0 10px">Favorites Dashboard</h3><div id="multiLocationCards" class="chart-grid"></div><p id="aiInsight" class="muted" style="margin-top:10px"></p></section>
 
   <section id="analyticsPanel" class="panel">
     <h3 style="margin:0 0 10px">Weather Analytics</h3>
@@ -151,6 +159,7 @@ body.weather-night #starsOverlay{opacity:1}
   <button data-target="analyticsPanel">Charts</button>
   <button data-target="mapContainer">Map</button>
 </nav>
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 </body>
