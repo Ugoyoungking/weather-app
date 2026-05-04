@@ -5,6 +5,8 @@ let lastCity = '';
 let lastCoords = null;
 let map;
 let selectedLatLng = null;
+let mapMarker = null;
+let currentLocationMarker = null;
 let recentCities = JSON.parse(localStorage.getItem('recentCities') || '[]');
 
 const cityInput = document.getElementById('cityInput');
@@ -285,6 +287,11 @@ document.getElementById('locateBtn').onclick = () => {
     (p) => {
       selectedLatLng = { lat: p.coords.latitude, lng: p.coords.longitude };
       fetchWeatherByCoords(selectedLatLng.lat, selectedLatLng.lng);
+      if (map) {
+        map.setView([selectedLatLng.lat, selectedLatLng.lng], 8);
+        if (currentLocationMarker) map.removeLayer(currentLocationMarker);
+        currentLocationMarker = L.circleMarker([selectedLatLng.lat, selectedLatLng.lng], { radius: 8, color: '#22c55e', fillOpacity: 0.9 }).addTo(map).bindPopup('You are here');
+      }
     },
     () => alert('Unable to retrieve your location.')
   );
@@ -305,15 +312,38 @@ document.getElementById('confirmMapSelection').onclick = () => {
 function initMap() {
   if (!map) {
     map = L.map('map').setView([20, 0], 2);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+
+    const baseLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '© OpenStreetMap contributors'
     }).addTo(map);
 
+    const cloudsLayer = L.tileLayer(`https://tile.openweathermap.org/map/clouds_new/{z}/{x}/{y}.png?appid=${apiKey}`, {
+      attribution: 'Weather data © OpenWeatherMap',
+      opacity: 0.5
+    }).addTo(map);
+
+    const rainLayer = L.tileLayer(`https://tile.openweathermap.org/map/precipitation_new/{z}/{x}/{y}.png?appid=${apiKey}`, {
+      attribution: 'Weather data © OpenWeatherMap',
+      opacity: 0.55
+    }).addTo(map);
+
+    L.control.layers({ 'OpenStreetMap': baseLayer }, { 'Clouds': cloudsLayer, 'Rain': rainLayer }, { collapsed: false }).addTo(map);
+
     map.on('click', (e) => {
       selectedLatLng = e.latlng;
-      if (map.marker) map.removeLayer(map.marker);
-      map.marker = L.marker(e.latlng).addTo(map);
+      if (mapMarker) map.removeLayer(mapMarker);
+      mapMarker = L.marker(e.latlng).addTo(map);
+      fetchWeatherByCoords(selectedLatLng.lat, selectedLatLng.lng);
     });
+
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition((p) => {
+        const lat = p.coords.latitude;
+        const lng = p.coords.longitude;
+        map.setView([lat, lng], 8);
+        currentLocationMarker = L.circleMarker([lat, lng], { radius: 8, color: '#22c55e', fillOpacity: 0.9 }).addTo(map).bindPopup('You are here');
+      });
+    }
   }
   setTimeout(() => map.invalidateSize(), 80);
 }
