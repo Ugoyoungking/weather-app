@@ -56,6 +56,12 @@ button{padding:10px 12px;border-radius:10px;border:0;cursor:pointer;font-weight:
 #map{height:320px;border-radius:12px}
 #loading{display:none;font-weight:700;color:var(--primary)}
 .muted{color:var(--muted)}
+.chart-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px}
+.chart-card{background:var(--surface-2);border:1px solid var(--border);border-radius:14px;padding:12px}
+.humidity-gauge{--value:0;--gauge-color:#38bdf8;width:160px;aspect-ratio:1;border-radius:50%;background:conic-gradient(var(--gauge-color) calc(var(--value)*1%), rgba(148,163,184,.25) 0);display:grid;place-items:center;margin:8px auto 4px;position:relative}
+.humidity-gauge::before{content:"";position:absolute;inset:12px;border-radius:50%;background:var(--surface)}
+.humidity-gauge span{position:relative;font-size:1.2rem;font-weight:700}
+@media (max-width:900px){.chart-grid{grid-template-columns:1fr}}
 @media (max-width:900px){.controls-grid,#weatherDisplay{grid-template-columns:1fr}}
 
 body::before,body::after{content:"";position:fixed;inset:0;pointer-events:none;opacity:0;transition:opacity .9s ease;z-index:0}
@@ -115,7 +121,19 @@ body.weather-night #starsOverlay{opacity:1}
     <div class="card"><div id="loading">Loading weather data…</div><div id="currentWeather"></div></div>
     <div class="card"><div id="airQualityContainer"></div><div id="forecastContainer"></div></div>
   </section>
+
+
+  <section class="panel">
+    <h3 style="margin:0 0 10px">Weather Analytics</h3>
+    <div class="chart-grid">
+      <div class="chart-card"><h4 style="margin:0 0 8px">Hourly Temperature</h4><canvas id="hourlyTempChart" height="130"></canvas></div>
+      <div class="chart-card"><h4 style="margin:0 0 8px">Weekly Temperature</h4><canvas id="weeklyTempChart" height="130"></canvas></div>
+      <div class="chart-card"><h4 style="margin:0 0 8px">Wind Speed Trend</h4><canvas id="windChart" height="130"></canvas></div>
+      <div class="chart-card"><h4 style="margin:0">Humidity Gauge</h4><div id="humidityGauge" class="humidity-gauge"><span id="humidityValue">0%</span></div><p class="muted" style="text-align:center;margin:0">Relative humidity</p></div>
+    </div>
+  </section>
 </div>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 </body>
 </html>
